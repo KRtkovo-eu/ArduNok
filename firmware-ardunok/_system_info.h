@@ -6,13 +6,13 @@
  */
 
 // firmware info
-#define FWVERSION "V 00.02"
+#define FWVERSION "v00.02"
 #define FWDATE "21-03-2022"
 #define FWMODEL "PSB-1"
 
 // hardware info
 #define HWMANUFACTURER "SPACE"
-#define HWMODEL "2650"
+#define HWMODEL "2560"
 #define DISPLAYRESX 84 // display used is 84*48 pixels, corresponds to the Nokia 5110/3310/etc. with 5 lines of text
 #define DISPLAYRESY 48 // firmware is currently NOT designed for 96*65 pixels display from Nokia 3410/7110 etc.
 
