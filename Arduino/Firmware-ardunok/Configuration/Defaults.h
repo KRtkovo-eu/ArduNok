@@ -6,7 +6,7 @@
  */
 
 // Language settings
-#include "lang_english.h"
+#include "../Languages/English.h"
 /*  Select different language file only if that file is present.
  *  Currently only english is supported by the official firmware.
  *  Feel free to create your own translation and send us Pull Request!

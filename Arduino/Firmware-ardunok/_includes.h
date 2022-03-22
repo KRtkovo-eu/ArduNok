@@ -8,12 +8,12 @@
 #include <TrueRandom.h>
 
 // Bitmaps
-#include "bitmaps_system.h"
-#include "bitmaps_desktop.h"
-#include "bitmaps_menu.h"
+#include "Bitmaps/System.h"
+#include "Bitmaps/Desktop.h"
+#include "Bitmaps/Menu.h"
 
 // Sounds
-#include "rtttl_predefined.h"
+#include "Sounds/RTTTL_predefined.h"
 
 // Used AdafruitGFX fonts
 #include "Fonts/Picopixel.h"
@@ -28,10 +28,10 @@
 #include "Fonts/SegmentNumeric21.h"
 
 // Project files
-#include "avrHelper.h"
-#include "enums.h"
-#include "_configuration.h"
-#include "_system_info.h"
+#include "Helpers/avrHelper.h"
+#include "Helpers/enums.h"
+#include "Configuration/Defaults.h"
+#include "Configuration/System.h"
 
 // Games
-#include "game_dice.h"
+#include "Games/ThrowDice.h"

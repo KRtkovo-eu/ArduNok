@@ -2,7 +2,7 @@
  *  any features for the firmware.
  * 
  *  To customize the firmware defaults for your device
- *  visit _configuration.h file.
+ *  visit Configuration/Defaults.h file.
  */
 
 // firmware info
@@ -24,7 +24,7 @@
 #define SUCCTONEFREQUENCYSHIFT 450
 
 // Arduino pins configuration
-/* default values are for Space 2650 shield
+/* default values are for Space 2560 shield
  */
 #define PINDISPCLK 5 //5
 #define PINDISPDIN 7 //7
