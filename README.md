@@ -1,6 +1,8 @@
 # ArduNok
 Open source firmware for Arduino that mimics Nokia DCT-3 phones UI (such as 5110, 3310 etc.). Enjoy the taste of the age when mobile phones were amazing devices!
 
+![proof-of-concept](https://raw.githubusercontent.com/KRtkovo-eu/ArduNok/master/Pictures/misc/proof-of-concept.jpg)
+
 ## Current development
 - FW model: PSB-1
 - FW version: v00.02
