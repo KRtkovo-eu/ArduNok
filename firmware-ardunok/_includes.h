@@ -7,12 +7,6 @@
 #include <StopWatch.h>
 #include <TrueRandom.h>
 
-// Project files
-#include "avrHelper.h"
-#include "enums.h"
-#include "_configuration.h"
-#include "_system_info.h"
-
 // Bitmaps
 #include "bitmaps_system.h"
 #include "bitmaps_desktop.h"
@@ -32,6 +26,12 @@
 #include "Fonts/NokiaBigBold.h"
 #include "Fonts/SegmentNumeric11.h"
 #include "Fonts/SegmentNumeric21.h"
+
+// Project files
+#include "avrHelper.h"
+#include "enums.h"
+#include "_configuration.h"
+#include "_system_info.h"
 
 // Games
 #include "game_dice.h"

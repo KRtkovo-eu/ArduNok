@@ -1,3 +1,4 @@
+// Source: https://forum.arduino.cc/t/read-internal-voltage-referance/130996
 long ReadInternalVccInt() {
   // Read 1.1V reference against AVcc
   // set the reference to Vcc and the measurement to the internal 1.1V reference
@@ -7,6 +8,9 @@ long ReadInternalVccInt() {
   ADMUX = _BV(MUX5) | _BV(MUX0) ;
   #else
   ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  #endif
+  #if defined(__AVR_ATmega2560__)
+    ADCSRB &= ~_BV(MUX5); // Without this the function always returns -1 on the ATmega2560
   #endif
   
   delay(3); // Wait for Vref to settle

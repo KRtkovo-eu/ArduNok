@@ -1,4 +1,4 @@
-// All included files and libraries are specified in _includes.h file, except language file which is set in _configuration.h
+char currentInputTimeText[5];// All included files and libraries are specified in _includes.h file, except language file which is set in _configuration.h
 #include "_includes.h"
 
 // Declare LCD object for software SPI
@@ -44,9 +44,6 @@ void setup()   {
   // Turn off backlight
   digitalWrite(PINBACKLIGHT, HIGH);
 
-  // Start serial communication
-  Serial.begin(SERIALBAUDRATE);
-
   // Single Click event attachment
   btnEnter.attachClick(HandleEnterClick);
   btnCancel.attachClick(HandleCancelClick);
@@ -79,7 +76,7 @@ byte currentHours = 0;
 byte currentMinutes = 0;
 
 byte playRtttlCollectionCurrent = 0;
-
+long checkIndexCurrent = 0;
 byte gameDiceValue = 0;
 
 void loop() {
@@ -119,6 +116,23 @@ void loop() {
           break;
         case NetMonitor:
           HandleSerialMonitor();
+          break;
+        case SerialLineMenu:
+          switch(submenuEntered) {
+            case 0:
+              DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_SERIALMONSHOW, LANG_VOID, LANG_KEYSELECT);
+              break;
+            case 1:
+              char serialBaudrateSpeedText[13];
+              String(String(SERIALBAUDRATE) + " baud").toCharArray(serialBaudrateSpeedText, 13);
+              DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_SERIALSPEED, serialBaudrateSpeedText, LANG_KEYSELECT);
+              break;
+          }
+          break;
+        case SerialLineSpeedInput:
+          char serialBaudrateSpeedText[8];
+          String(checkIndexCurrent).toCharArray(serialBaudrateSpeedText, 8);
+          DisplayRangeInputScreen(LANG_SERIALSPEEDINPUT, serialBaudrateSpeedText, LANG_KEYOK);
           break;
         case DateTime:
           switch(submenuEntered) {
@@ -177,7 +191,7 @@ void loop() {
           }
           display.setFont(&Nokia6ptBold);
           
-          DisplayCenterString(SYSTEMOPERATOR, 10);
+          DisplayCenterString(HWMANUFACTURER, 10);
           DisplayKeyLabel(keyboardLocked ? LANG_KEYUNLOCK : LANG_KEYMENU);
           display.display();
           break;
@@ -201,25 +215,27 @@ void loop() {
             case 0:
               DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_SOUNDSKEYTONES, (BEEPONKEYPRESS ? LANG_SETTINGON : LANG_SETTINGOFF), LANG_KEYSELECT);
               break;
-            // Boot sound
+            // Alert beeps
             case 1:
+              DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_SOUNDSALERTS, (ALERTBEEPS ? LANG_SETTINGON : LANG_SETTINGOFF), LANG_KEYSELECT);
+              break;
+            // Boot sound
+            case 2:
               DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_SOUNDSBOOTSOUND, (BOOTSOUND ? LANG_SETTINGON : LANG_SETTINGOFF), LANG_KEYSELECT);
               break;
             // Received serial monitor message tone
-            case 2:
+            case 3:
               DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_SOUNDSSERIALMONMSG, (SERIALMONMSGSOUND ? LANG_SETTINGSDEFAULT : LANG_SETTINGOFF), LANG_KEYSELECT);
               break;
             // Open RTTTL gallery
-            case 3:
+            case 4:
               DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_PLAYRTTTLCOLLECTION, LANG_VOID, LANG_KEYSHOW);
               break;
             // Open RTTTL composer
-            case 4:
+            case 5:
               DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_RTTTLCOMPOSER, LANG_VOID, LANG_KEYSELECT);
               break;
-          }
-          display.setFont(&Nokia6ptBold);
-          
+          }        
           break;
         case PicturesGallery:
           display.clearDisplay();
@@ -254,6 +270,12 @@ static void KeyPressSound(int frequencyShift = 0, int toneDurationShift = 0) {
     tone(PINSPEAKER, KEYPRESSTONEFREQUENCY + frequencyShift, KEYPRESSTONEDURATION + toneDurationShift);
   }
 }
+static void AlertBeepSound(int frequencyShift, int toneDurationShift) {
+  if(ALERTBEEPS && DEVICEVOLUME > 0) {
+    tone(PINSPEAKER, KEYPRESSTONEFREQUENCY + frequencyShift, KEYPRESSTONEDURATION + toneDurationShift);
+  }
+}
+
 
 static byte CalculateSliderPosition(byte currentItem, byte allItemsCount) {
   byte pos = 8 + (((int)(32 / allItemsCount) - (allItemsCount > 9 ? 0.5 : 0)) * currentItem);
@@ -312,19 +334,20 @@ static void DisplaySuccessScreen(const char* successMessage) {
   display.println(successMessage);
   display.drawBitmap(59, 7, epd_bitmap_success0, 21, 20, BLACK);
   display.display();
-  delay(250);
+  
+  delay(50);
+  AlertBeepSound(SUCCTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
+  delay(200);
+  
   display.drawBitmap(59, 7, epd_bitmap_success1, 21, 20, BLACK);
   display.display();
   delay(250);
+  
   display.drawBitmap(59, 7, epd_bitmap_success2, 21, 20, BLACK);
   display.display();
   delay(1500);
+  
   display.setFont(&Nokia6ptBold);
-}
-
-static void DisplayStopScreen(const char* stopMessage) {
-  KeyPressSound(FAILTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
-  DisplayInfoScreen(stopMessage, false);
 }
 
 static void DisplayInfoScreen(const char* infoMessage, bool isInfo) {
@@ -334,8 +357,20 @@ static void DisplayInfoScreen(const char* infoMessage, bool isInfo) {
   display.println(infoMessage);
   isInfo ? display.drawBitmap(60, 7, epd_bitmap_info, 19, 23, BLACK) : display.drawBitmap(59, 7, epd_bitmap_stop, 20, 20, BLACK);
   display.display();
+
+  if(isInfo) {
+    AlertBeepSound(SUCCTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
+  }
+  else {
+    AlertBeepSound(FAILTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
+  }
+  
   delay(1500);
   display.setFont(&Nokia6ptBold);
+}
+
+static void DisplayStopScreen(const char* stopMessage) {
+  DisplayInfoScreen(stopMessage, false);
 }
 
 static void DisplaySlider(byte sliderPosition, byte sliderItemsCount) {
@@ -410,17 +445,30 @@ static void DisplayListmenuScreen(byte menuPosition, byte menuItemsCount, const 
   display.display();
 }
 
-static void DisplayInputScreen(const char* inputHeaderLabel, const char* inputValue, const char* keyLabel) {
+static void DisplayInputScreen(const char* inputHeaderLabel, const char* inputValue, const char* keyLabel, bool isRange) {
   display.clearDisplay();
   display.drawBitmap(0, 0, epd_bitmap_symbol_write, 13, 6, BLACK);
+  if(isRange) {
+    display.drawBitmap(0, 16, epd_bitmap_range, 9, 22, BLACK);
+  }
+  
   display.setCursor(0, 7);
   display.println(inputHeaderLabel);
+  
   display.drawRect(0, 16, 84, 22, BLACK);
+  
   display.setFont(&NokiaBigBold);
   DisplayRightString(inputValue, 24, 3);
+  
   display.setFont(&Nokia6ptBold);
   DisplayKeyLabel(keyLabel);
   display.display();
+}
+static void DisplayInputScreen(const char* inputHeaderLabel, const char* inputValue, const char* keyLabel) {
+  DisplayInputScreen(inputHeaderLabel, inputValue, keyLabel, false);
+}
+static void DisplayRangeInputScreen(const char* inputHeaderLabel, const char* inputValue, const char* keyLabel) {
+  DisplayInputScreen(inputHeaderLabel, inputValue, keyLabel, true);
 }
 
 
@@ -470,16 +518,25 @@ static void LoopChargingScreens() {
 
 
 char incomingByte; // for incoming serial data
+char serialIncomingWord[32];
 byte cursorX = 0;
 byte cursorY = 0;
 unsigned long startMillisSerial;
+bool forceClearSerialMonitor = true;
 static void ClearSerialMonitor() {
-    submenuEntered = 1;
+    forceClearSerialMonitor = false;
     display.clearDisplay();
-    display.drawBitmap(0, 0, epd_bitmap_serial, DISPLAYRESX, 7, BLACK);
-
+    //display.drawBitmap(0, 0, epd_bitmap_serial, DISPLAYRESX, 7, BLACK);
+    display.fillRect(0, 0, 84, 7, BLACK);
+    
     display.setFont(&Picopixel);
     display.setTextSize(1);
+    display.setTextColor(WHITE);
+    
+    char serialBaudrateSpeedText[19];
+    String("<< " + String(SERIALBAUDRATE) + " BAUD >>").toCharArray(serialBaudrateSpeedText, 19);
+    DisplayCenterString(serialBaudrateSpeedText, 5);
+
     display.setTextColor(BLACK);
 
     cursorX = 0;
@@ -493,7 +550,7 @@ static void ClearSerialMonitor() {
     display.setFont(&Nokia6ptBold);
 }
 static void HandleSerialMonitor() {
-  if(submenuEntered == 0) {
+  if(forceClearSerialMonitor) {
     ClearSerialMonitor();
   }
   
@@ -510,8 +567,7 @@ static void HandleSerialMonitor() {
     }
     
     // say what you got:
-    Serial.print(F("I received: "));
-    Serial.println(incomingByte);
+    Serial.print(incomingByte);
 
     display.setFont(&Picopixel);
     
@@ -557,10 +613,75 @@ static void HandleSerialMonitor() {
     display.setFont(&Nokia6ptBold);
 
     if(cursorY >= 43) {
-      submenuEntered = 0;
+      forceClearSerialMonitor = true;
     }
 
     startMillisSerial = currentMillisSerial;
+
+    // Handle incoming words over serial line
+    if(incomingByte == '\n') {
+      if(strcmp(serialIncomingWord, "info") == 0) {
+        Serial.println("");
+        Serial.println(F("Device informations:"));
+        Serial.println(F("--------------------"));
+        
+        Serial.print(F("HW manufacturer: "));
+        Serial.println(HWMANUFACTURER);
+        
+        Serial.print(F("HW model: "));
+        Serial.println(HWMODEL);
+
+        Serial.print(F("Product number: "));
+        Serial.println(F("PROTOTYPE"));
+
+        Serial.println("");
+        
+        Serial.print(F("Firmware model: "));
+        Serial.println(FWMODEL);
+        
+        Serial.print(F("Firmware version: "));
+        Serial.println(FWVERSION);
+        
+        Serial.print(F("Firmware date: "));
+        Serial.println(FWDATE);
+
+        Serial.println("");
+        
+        Serial.print(F("Display resolution X: "));
+        Serial.print(DISPLAYRESX);
+        Serial.println(F(" pixels"));
+        
+        Serial.print(F("Display resolution Y: "));
+        Serial.print(DISPLAYRESY);
+        Serial.println(F(" pixels"));
+
+        Serial.print(F("Display color depth: "));
+        Serial.println(F("Monochrome graphic"));
+        
+        Serial.println("");
+
+        Serial.print(F("Sound: "));
+        Serial.println(F("1-bit square wave"));
+
+        Serial.println("");
+
+        Serial.print(F("Internal voltage: "));
+        Serial.print(String("+" + String(double(ReadInternalVccInt())/1000)));
+        Serial.println(F("V (volts)"));
+        Serial.print(F("Serial line speed: "));
+        Serial.print(SERIALBAUDRATE);
+        Serial.println(F(" baud"));
+      }
+
+      // reset char array
+      memset(serialIncomingWord, '\0', sizeof(serialIncomingWord));
+      Serial.println("");
+    }
+    else {
+      if(isAlpha(incomingByte)) {
+        strncat(serialIncomingWord, &incomingByte, 1);
+      }
+    }
   }
 }
 
@@ -734,8 +855,8 @@ static void HandleEnterClick() {
     case Menu:
       switch(menuScreenShown) {
         case 0:
-          //submenuItemsCount = 1;
-          currentScreenType = NetMonitor;
+          currentScreenType = SerialLineMenu;
+          submenuItemsCount = 2;
           break;
         case 1:
           currentScreenType = DateTime;
@@ -746,7 +867,7 @@ static void HandleEnterClick() {
           break;
         case 3:
           currentScreenType = Sounds;
-          submenuItemsCount = 5;
+          submenuItemsCount = 6;
           break;
         case 4:
           currentScreenType = PicturesGallery;
@@ -754,7 +875,7 @@ static void HandleEnterClick() {
           break;
         case 5:
           currentScreenType = Games;
-          submenuItemsCount = 1;
+          //submenuItemsCount = 1;
           break;
         case 9:
           display.clearDisplay();
@@ -776,6 +897,27 @@ static void HandleEnterClick() {
           DisplayStopScreen(LANG_INPROGRESS);
           break;
       }
+      break;
+    case SerialLineMenu:
+      switch(submenuEntered) {
+        case 0:
+          currentScreenType = NetMonitor;
+          break;
+        case 1:
+          checkIndexCurrent = SERIALBAUDRATE;
+          currentScreenType = SerialLineSpeedInput;
+          break;
+      }
+      break;
+    case SerialLineSpeedInput:
+      SERIALBAUDRATE = checkIndexCurrent;
+      checkIndexCurrent = 0;
+      currentScreenType = SerialLineMenu;
+      
+      Serial.end();
+      Serial.begin(SERIALBAUDRATE);
+
+      DisplaySuccessScreen(LANG_SETTINGSDONE);
       break;
     case DateTime:
       switch(submenuEntered) {
@@ -805,21 +947,25 @@ static void HandleEnterClick() {
           DisplaySuccessScreen(LANG_SETTINGSDONE);
           break;
         case 1:
-          BOOTSOUND = !BOOTSOUND;
+          ALERTBEEPS = !ALERTBEEPS;
           DisplaySuccessScreen(LANG_SETTINGSDONE);
           break;
         case 2:
-          SERIALMONMSGSOUND = !SERIALMONMSGSOUND;
+          BOOTSOUND = !BOOTSOUND;
           DisplaySuccessScreen(LANG_SETTINGSDONE);
           break;
         case 3:
-          currentScreenType = RTTTL;
-
+          SERIALMONMSGSOUND = !SERIALMONMSGSOUND;
+          DisplaySuccessScreen(LANG_SETTINGSDONE);
+          break;
+        case 4:
           if(DEVICEVOLUME == 0) {
             DisplayStopScreen(LANG_SILENTMODE);
           }
           else {
-            for(playRtttlCollectionCurrent = 0; playRtttlCollectionCurrent < RTTTLPREDEFCOUNT; playRtttlCollectionCurrent++) {
+            currentScreenType = RTTTL;
+            
+            for(checkIndexCurrent = 0; checkIndexCurrent < RTTTLPREDEFCOUNT; checkIndexCurrent++) {
               if(playRtttlForceBreak) {
                 playRtttlForceBreak = false;
                 break;
@@ -829,16 +975,16 @@ static void HandleEnterClick() {
               display.clearDisplay();
               display.drawBitmap(19, 12, epd_bitmap_playRtttl, 46, 27, BLACK);
               
-              DisplaySlider(playRtttlCollectionCurrent, RTTTLPREDEFCOUNT);
+              DisplaySlider(checkIndexCurrent, RTTTLPREDEFCOUNT);
       
               // Get ringtone name from RTTTL string
               char rtttlStringStart[32];
-              strncpy_P(rtttlStringStart, (char*)pgm_read_word(&(RtttlPredefined[playRtttlCollectionCurrent])), 31);
+              strncpy_P(rtttlStringStart, (char*)pgm_read_word(&(RtttlPredefined[checkIndexCurrent])), 31);
               char* rtttlName = strtok(rtttlStringStart, ":");
       
               display.setFont(&Picopixel);
               display.setCursor(0,5);
-              display.println(String(playRtttlCollectionCurrent == 0 ? 1 : playRtttlCollectionCurrent) + F(":"));
+              display.println(String(checkIndexCurrent == 0 ? 1 : checkIndexCurrent) + F(":"));
               
               display.setFont(&Nokia6ptBold);
               DisplayCenterString(rtttlName, 0);
@@ -847,7 +993,7 @@ static void HandleEnterClick() {
               
               display.display();
               
-              startPlayRtttlPGM(PINSPEAKER, (char*)pgm_read_word(&(RtttlPredefined[playRtttlCollectionCurrent])));
+              startPlayRtttlPGM(PINSPEAKER, (char*)pgm_read_word(&(RtttlPredefined[checkIndexCurrent])));
 
               // While playing (non-blocking) RTTTL melody, check for buttons
               while (updatePlayRtttl()) {
@@ -858,14 +1004,14 @@ static void HandleEnterClick() {
               }
 
               // At the end of the collection, play again
-              if(playRtttlCollectionCurrent == RTTTLPREDEFCOUNT - 1) {
-                playRtttlCollectionCurrent = 0;
+              if(checkIndexCurrent == RTTTLPREDEFCOUNT - 1) {
+                checkIndexCurrent = 0;
               }
             }
             playRtttlRunning = false;
           }
           break;
-        case 4:
+        case 5:
           DisplayStopScreen(LANG_INPROGRESS);
           break;
       }
@@ -895,35 +1041,35 @@ static void HandleEnterClick() {
           display.clearDisplay();
           DisplayBitmap(epd_bitmap_game_dice_intro_a);
           display.display();
-          if(DEVICEVOLUME > 0) {
+          if(DEVICEVOLUME > 0 && ALERTBEEPS) {
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
           }
           delay(100);
           display.clearDisplay();
           DisplayBitmap(epd_bitmap_game_dice_intro_b);
           display.display();
-          if(DEVICEVOLUME > 0) {
+          if(DEVICEVOLUME > 0 && ALERTBEEPS) {
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
           }
           delay(100);
           display.clearDisplay();
           DisplayBitmap(epd_bitmap_game_dice_intro_a);
           display.display();
-          if(DEVICEVOLUME > 0) {
+          if(DEVICEVOLUME > 0 && ALERTBEEPS) {
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
           }
           delay(100);
           display.clearDisplay();
           DisplayBitmap(epd_bitmap_game_dice_intro_b);
           display.display();
-          if(DEVICEVOLUME > 0) {
+          if(DEVICEVOLUME > 0 && ALERTBEEPS) {
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
           }
           delay(100);
           display.clearDisplay();
           DisplayBitmap(epd_bitmap_game_dice_intro_a);
           display.display();
-          if(DEVICEVOLUME > 0) {
+          if(DEVICEVOLUME > 0 && ALERTBEEPS) {
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
             playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
@@ -937,32 +1083,32 @@ static void HandleEnterClick() {
       display.clearDisplay();
       DisplayBitmap(epd_bitmap_game_dice_wait_a);
       display.display();
-      if(DEVICEVOLUME > 0) {
+      if(DEVICEVOLUME > 0 && ALERTBEEPS) {
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
       }
       delay(150);
       display.invertDisplay(1);
-      if(DEVICEVOLUME > 0) {
+      if(DEVICEVOLUME > 0 && ALERTBEEPS) {
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
       }
       delay(150);
       display.invertDisplay(0);
-      if(DEVICEVOLUME > 0) {
+      if(DEVICEVOLUME > 0 && ALERTBEEPS) {
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
       }
       delay(150);
       display.invertDisplay(1);
-      if(DEVICEVOLUME > 0) {
+      if(DEVICEVOLUME > 0 && ALERTBEEPS) {
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
       }
       delay(150);
       display.invertDisplay(0);
-      if(DEVICEVOLUME > 0) {
+      if(DEVICEVOLUME > 0 && ALERTBEEPS) {
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
         playRtttlBlockingPGM(PINSPEAKER, GameDiceSound);
       }
-
+    
       gameDiceValue = TrueRandom.random(1,7);
       break;
   }
@@ -984,19 +1130,27 @@ static void HandleEnterLongPress() {
         display.println(LANG_KEYBOARDLOCKED);
         display.drawBitmap(58, 5, epd_bitmap_keyboard_locked0, 22, 26, BLACK);
         display.display();
-        delay(250);
+        
+        delay(50);
+        AlertBeepSound(SUCCTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
+        delay(200);
+        
         display.clearDisplay();
         display.setCursor(0,6);
         display.println(LANG_KEYBOARDLOCKED);
         display.drawBitmap(58, 5, epd_bitmap_keyboard_locked1, 22, 26, BLACK);
         display.display();
+        
         delay(250);
+        
         display.clearDisplay();
         display.setCursor(0,6);
         display.println(LANG_KEYBOARDLOCKED);
         display.drawBitmap(58, 5, epd_bitmap_keyboard_locked2, 22, 26, BLACK);
         display.display();
+        
         delay(1500);
+        
         display.setFont(&Nokia6ptBold);
         BacklightTurnOnOff(false);
       }
@@ -1020,15 +1174,23 @@ static void HandleCancelClick() {
         menuScreenShown = 0;
         break;
       case FwInfo:
-      case NetMonitor:
       case DateTime:
       case Multimeter:
       case Sounds:
       case PicturesGallery:
       case Games:
+      case SerialLineMenu:
         currentScreenType = Menu;
         submenuEntered = 0;
         submenuItemsCount = MENUITEMSCOUNT;
+        break;
+      case SerialLineSpeedInput:
+        currentScreenType = SerialLineMenu;
+        checkIndexCurrent = 0;
+        break;
+      case NetMonitor:
+        currentScreenType = SerialLineMenu;
+        forceClearSerialMonitor = true;
         break;
       case RTTTL:
         if(playRtttlRunning) {
@@ -1151,7 +1313,57 @@ static void HandleUpClick() {
     case Sounds:
     case PicturesGallery:
     case Games:
+    case SerialLineMenu:
       (submenuEntered > 0) ? submenuEntered-- : submenuEntered = (submenuItemsCount - 1);
+      break;
+    case SerialLineSpeedInput:
+      switch(checkIndexCurrent) {
+        case 300:
+          checkIndexCurrent = 1200;
+          break;
+        case 1200:
+          checkIndexCurrent = 2400;
+          break;
+        case 2400:
+          checkIndexCurrent = 4800;
+          break;
+        case 4800:
+          checkIndexCurrent = 9600;
+          break;
+        case 9600:
+          checkIndexCurrent = 19200;
+          break;
+        case 19200:
+          checkIndexCurrent = 38400;
+          break;
+        case 38400:
+          checkIndexCurrent = 57600;
+          break;
+        case 57600:
+          checkIndexCurrent = 74880;
+          break;
+        case 74880:
+          checkIndexCurrent = 115200;
+          break;
+        case 115200:
+          checkIndexCurrent = 230400;
+          break;
+        case 230400:
+          checkIndexCurrent = 250000;
+          break;
+        case 250000:
+          checkIndexCurrent = 500000;
+          break;
+        case 500000:
+          checkIndexCurrent = 1000000;
+          break;
+        case 1000000:
+          checkIndexCurrent = 2000000;
+          break;
+        default:
+          AlertBeepSound(FAILTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
+          break;
+      }
       break;
     case SettingInputClock:
       if(runMinutesShiftInput < 59) {
@@ -1200,7 +1412,57 @@ static void HandleDownClick() {
     case Sounds:
     case PicturesGallery:
     case Games:
+    case SerialLineMenu:
       (submenuEntered < (submenuItemsCount - 1)) ? submenuEntered++ : submenuEntered = 0;
+      break;
+    case SerialLineSpeedInput:
+      switch(checkIndexCurrent) {
+        case 1200:
+          checkIndexCurrent = 300;
+          break;
+        case 2400:
+          checkIndexCurrent = 1200;
+          break;
+        case 4800:
+          checkIndexCurrent = 2400;
+          break;
+        case 9600:
+          checkIndexCurrent = 4800;
+          break;
+        case 19200:
+          checkIndexCurrent = 9600;
+          break;
+        case 38400:
+          checkIndexCurrent = 19200;
+          break;
+        case 57600:
+          checkIndexCurrent = 38400;
+          break;
+        case 74880:
+          checkIndexCurrent = 57600;
+          break;
+        case 115200:
+          checkIndexCurrent = 74880;
+          break;
+        case 230400:
+          checkIndexCurrent = 115200;
+          break;
+        case 250000:
+          checkIndexCurrent = 230400;
+          break;
+        case 500000:
+          checkIndexCurrent = 250000;
+          break;
+        case 1000000:
+          checkIndexCurrent = 500000;
+          break;
+        case 2000000:
+          checkIndexCurrent = 1000000;
+          break;
+        default:
+          AlertBeepSound(FAILTONEFREQUENCYSHIFT, FAILTONEDURATIONSHIFT);
+          break;
+      }
       break;
     case SettingInputClock:
       if(runHoursShiftInput < 23) {

@@ -28,6 +28,11 @@ static const char* const LANG_MENUITEMS[10] PROGMEM = {
 // Labels for DESKTOP screen
 #define LANG_SILENTMODE "Profile\nsilent"
 
+// Labels for SERIAL LINE screens
+#define LANG_SERIALSPEED "Serial line\nbaudrate"
+#define LANG_SERIALSPEEDINPUT "Baudrate:"
+#define LANG_SERIALMONSHOW "Monitor\nserial line"
+
 // Labels for MULTIMETER screen
 #define LANG_MULTIMETERINTVCC "internal Vcc"
 #define LANG_MULTIMETERVOLTUNITS "V"
@@ -43,10 +48,15 @@ static const char* const LANG_MENUITEMS[10] PROGMEM = {
 
 // Labels for SOUNDS screen
 #define LANG_SOUNDSKEYTONES "Keypad\ntones"
+#define LANG_SOUNDSALERTS "Warning and\ngame tones"
 #define LANG_SOUNDSBOOTSOUND "Play sound\non boot"
 #define LANG_SOUNDSSERIALMONMSG "Serial line\nalert tone"
-#define LANG_PLAYRTTTLCOLLECTION "Melodies\ngallery"
-#define LANG_RTTTLCOMPOSER "Melody\ncomposer"
+#define LANG_PLAYRTTTLCOLLECTION "Ringtones\ngallery"
+#define LANG_RTTTLCOMPOSER "Ringtone\ncomposer"
+
+// Labels for DICE GAME screen
+#define LANG_GAMEDICENAME "Throw\nhexagonal\ndice"
+#define LANG_KEYTHROW "Throw"
 
 // Labels for Settings
 #define LANG_SETTINGON "On"

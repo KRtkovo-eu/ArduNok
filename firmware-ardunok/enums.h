@@ -3,6 +3,8 @@ enum ScreenType {
   Desktop,
   Menu,
   FwInfo,
+  SerialLineMenu,
+  SerialLineSpeedInput,
   NetMonitor,
   Sounds,
   RTTTL,
