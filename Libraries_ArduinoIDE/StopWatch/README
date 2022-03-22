@@ -1,0 +1,37 @@
+Source: https://playground.arduino.cc/Code/StopWatchClass/
+
+A StopWatch class for Arduino.
+Last Modified:	November 30, 2013, at 05:02 AM
+By:	robtillaart
+Platform:	All
+
+
+
+StopWatch library
+One of the main applications for the Arduino board is monitoring. And monitoring means measuring. Here I introduce a simple StopWatch class to measure elapsed time.
+
+The StopWatch class is in fact a wrapper around millis() and micros() with a few variables and an internal state. The internal state only holds running or not.
+
+The methods of the class are:
+
+    StopWatch(res);	// constructor, resolution is MICROS, MILLIS
+                        // or SECONDS; MILLIS is the default..
+    void start();	// start / continue the measurement
+    void stop();	// stops the measurement
+    long reset();	// resets the measurement
+                        // (you can't continue)
+
+    unsigned long value();	// elapsed time since start; 
+                        	// depreciated in the future
+    unsigned long elapsed();    // elapsed time since start 
+
+    bool isRunning();	// for compatibility with previous version
+
+    enum State state();	// current state of the stopwatch
+    enum Resolution resolution();   // chosen time-ticks.
+
+- see .h file for all details.
+
+To start the measurement one calls start() and internally the starttime is stored. The stopwatch is now running. At any time one can fetch the (lap)time by calling elapsed() giving the milliseconds [or micros or seconds] since start(). To stop the StopWatch one calls stop() - obvious - and now a call to value() will give the elapsed time between start() and stop(). Calling start() again and the counting will continue were it left. If one does not want that and want to start over again one needs to call reset() first.
+
+As it is a Class one can also make arrays of stopwatches that measure time in parallel.
