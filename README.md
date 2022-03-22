@@ -15,12 +15,11 @@ And even if you have one, it's still a phone - so you need to insert a SIM card 
 So that's why this project was created. I want to create open source firmware for Arduino which mimics iconic Nokia UI.
 
 ## HW requirements
-- Arduino MEGA 2560
+- Arduino MEGA 2560 (WILL NOT WORK WITH OTHER ARDUINO BOARDS!!! - this version of firmware is optimized for MEGA 2560 due to the memory and flash memory requirements. There is MEGA 2560 embedded version which provides the same features as big MEGA however its physical size is smaller)
 - Nokia display (84*48 pixels, monochrome)
 - 4 buttons (4x4 keyboard in future)
 - piezo buzzer (or speaker however it will act as buzzer)
-OR
-- SPACE 2560 shield (IN FUTURE, not available now)
+- optionally SPACE 2560 shield (IN FUTURE, not available now)
 
 ## Features
 After the proof-of-concept phase, which is more or less hardcoded, uses a lot of memory and has very hard procedure to add any feature, I want to prepare core architecture of the firmware (as was the firmware of Nokia).     
