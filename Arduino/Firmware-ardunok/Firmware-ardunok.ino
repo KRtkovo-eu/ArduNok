@@ -1198,24 +1198,14 @@ static void HandleCancelClick() {
           stopPlayRtttl();
         }
         currentScreenType = Sounds;
-        submenuEntered = 3; 
-        submenuItemsCount = 5; 
         break;
       case SettingInputClock:
-        currentScreenType = DateTime;
-        submenuEntered = 0;
-        break;
       case DigitalClock:
-        currentScreenType = DateTime;
-        submenuEntered = 1;
-        break;
       case AnalogClock:
         currentScreenType = DateTime;
-        submenuEntered = 2;
         break;
       case GameDice:
         currentScreenType = Games;
-        submenuEntered = 0;
         gameDiceValue = 0;
         break;
     } 
