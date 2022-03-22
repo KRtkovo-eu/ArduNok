@@ -1,4 +1,4 @@
-// Labels for MENU screen (corresponding bitmap from bitmaps_menu.h will be shown)
+// Labels for MENU screen (corresponding bitmap from Bitmaps/Menu.h will be shown)
 static const char* const LANG_MENUITEMS[10] PROGMEM = {
   (const char*) "Serial line",
   (const char*) "Clock",
