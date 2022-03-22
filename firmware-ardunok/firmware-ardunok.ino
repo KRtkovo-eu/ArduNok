@@ -1,4 +1,4 @@
-char currentInputTimeText[5];// All included files and libraries are specified in _includes.h file, except language file which is set in _configuration.h
+// All included files and libraries are specified in _includes.h file, except language file which is set in _configuration.h
 #include "_includes.h"
 
 // Declare LCD object for software SPI
