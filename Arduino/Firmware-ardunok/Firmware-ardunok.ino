@@ -75,7 +75,6 @@ byte runMinutesShiftInput = 0;
 byte currentHours = 0;
 byte currentMinutes = 0;
 
-byte playRtttlCollectionCurrent = 0;
 long checkIndexCurrent = 0;
 byte gameDiceValue = 0;
 
@@ -823,17 +822,17 @@ static bool HandleEveryClick(bool skipKeyboardLockCheck = false) {
 bool playRtttlForceBreak = false;
 bool playRtttlRunning = false;
 static void PlayPreviousRtttl() {
-  if(playRtttlCollectionCurrent - 2 >= 0) {
-    playRtttlCollectionCurrent = playRtttlCollectionCurrent - 2;
+  if(checkIndexCurrent - 2 >= 0) {
+    checkIndexCurrent = checkIndexCurrent - 2;
   }
   else {
-    playRtttlCollectionCurrent = RTTTLPREDEFCOUNT - 2;
+    checkIndexCurrent = RTTTLPREDEFCOUNT - 2;
   }
   stopPlayRtttl();
 }
 static void PlayNextRtttl() {
-  if(playRtttlCollectionCurrent == RTTTLPREDEFCOUNT - 1) {
-    playRtttlCollectionCurrent = 0;
+  if(checkIndexCurrent == RTTTLPREDEFCOUNT - 1) {
+    checkIndexCurrent = 0;
   }
   stopPlayRtttl();
 }
@@ -1469,9 +1468,9 @@ static void HandleDownClick() {
       //}
       //else {
         if(DEVICEVOLUME > 0) {
+          DEVICEVOLUME = 0;
           DisplaySuccessScreen(LANG_SILENTMODE);
         }
-        DEVICEVOLUME = 0;
       //}
       
       break;
