@@ -1,3 +1,7 @@
+/*  Do not modify this file unless you are developing
+ *  any features for the firmware.
+ */
+
 // Source: https://forum.arduino.cc/t/read-internal-voltage-referance/130996
 long ReadInternalVccInt() {
   // Read 1.1V reference against AVcc
@@ -33,4 +37,13 @@ unsigned int FSHlength(const __FlashStringHelper * FSHinput) {
     stringLength++;
   }
   return stringLength;
+}
+
+static bool CheckBatteryThreshold() {
+  if(ReadInternalVccInt() <= 3600) {
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    sleep_cpu();
+    return true;
+  }
+  return false;
 }

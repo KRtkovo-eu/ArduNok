@@ -15,18 +15,12 @@ OneButton btnDown = OneButton(PINBTNDOWN, true, true);
 
 bool batteryThresholdTriggered = false;
 
-static void CheckBatteryThreshold() {
-  if(ReadInternalVccInt() <= 3600) {
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-    sleep_cpu();
+void setup()   {
+  // Check battery level to prevent complete discharge
+  if(CheckBatteryThreshold()) {
     batteryThresholdTriggered = true;
     return;
   }
-}
-
-void setup()   {
-  // Check battery level to prevent complete discharge
-  CheckBatteryThreshold();
   
   // Initialize Display
   display.begin();
@@ -44,7 +38,7 @@ void setup()   {
   // Turn off backlight
   digitalWrite(PINBACKLIGHT, HIGH);
 
-  // Single Click event attachment
+  // Buttons click events attachment
   btnEnter.attachClick(HandleEnterClick);
   btnCancel.attachClick(HandleCancelClick);
   btnUp.attachClick(HandleUpClick);
@@ -275,10 +269,16 @@ static void AlertBeepSound(int frequencyShift, int toneDurationShift) {
   }
 }
 
-
+#define SLIDER_MAXTOP 8
+#define SLIDER_MAXBOTTOM 32
 static byte CalculateSliderPosition(byte currentItem, byte allItemsCount) {
-  byte pos = 8 + (((int)(32 / allItemsCount) - (allItemsCount > 9 ? 0.5 : 0)) * currentItem);
-  return (currentItem == (allItemsCount - 1)) ? 32 : pos;
+  // if only 1 item is in list return SLIDER_MAXTOP
+  if(allItemsCount == 1) {
+    return SLIDER_MAXTOP;
+  }
+  // if current item is the last in the list return SLIDER_MAXBOTTOM
+  byte pos = SLIDER_MAXTOP + (((int)(SLIDER_MAXBOTTOM / allItemsCount) - (allItemsCount > 9 ? 0.5 : 0)) * currentItem);
+  return (currentItem == (allItemsCount - 1)) ? SLIDER_MAXBOTTOM : pos;
 }
 
 // without this function I was not able to correctly show PROGMEM bitmaps stored in array
@@ -1301,7 +1301,6 @@ static void HandleUpClick() {
     case DateTime:
     case Sounds:
     case PicturesGallery:
-    case Games:
     case SerialLineMenu:
       (submenuEntered > 0) ? submenuEntered-- : submenuEntered = (submenuItemsCount - 1);
       break;
@@ -1400,7 +1399,6 @@ static void HandleDownClick() {
     case DateTime:
     case Sounds:
     case PicturesGallery:
-    case Games:
     case SerialLineMenu:
       (submenuEntered < (submenuItemsCount - 1)) ? submenuEntered++ : submenuEntered = 0;
       break;
@@ -1468,7 +1466,9 @@ static void HandleDownClick() {
       //}
       //else {
         if(DEVICEVOLUME > 0) {
+          // Set volume to 0
           DEVICEVOLUME = 0;
+          // Then show success screen (fix bug with sound playing when silent mode is entered)
           DisplaySuccessScreen(LANG_SILENTMODE);
         }
       //}

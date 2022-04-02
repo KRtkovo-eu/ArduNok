@@ -1,24 +1,29 @@
+/*  Do not modify this file unless you are developing
+ *  any features for the firmware.
+ */
+
+//
 // Ring Tone Text Transfer Language (RTTTL) was developed by Nokia to be used to transfer ringtones to cellphone by Nokia.
 // The RTTTL format is a string divided into three sections: name, default value, and data.
-
+//
 // The jintu section consists of a string describing the name of the ringtone. It can be no longer than 10 characters, and cannot contain a colon ":" character. (However, since the Smart Messaging specification allows names up to 15 characters in length, some applications processing RTTTL also do so.)
-
+//
 // The default value section is a set of values separated by commas, where each value contains a key and a value separated by an = character, which describes certain defaults which should be adhered to during the execution of the ringtone. Possible names are
-
+//
 // d - duration
 // o - octave
 // b - beat, tempo
 // The data section consists of a set of character strings separated by commas, where each string contains a duration, pitch, octave and optional dotting (which increases the duration of the note by one half).
-
+//
 // Example:
 // HauntHouse: d=4,o=5,b=108: 2a4,2e,2d#,2b4,2a4,2c,2d,2a#4,2e.,e,1f4,1a4,1d#,2e.,d,2c.,b4,1a4,1p,2a4,2e,2d#,2b4,2a4,2c,2d,2a#4,2e.,e,1f4,1a4,1d#,2e.,d,2c.,b4,1a4
-
+//
 // Part 1: name of the ringtone (here: "HauntHouse"), a string of characters represents the name of the ringtone
 // Part 2: settings (here: d=4,o=5,b=108), where "d=" is the default duration of a note. In this case, the "4" means that each note with no duration specifier (see below) is by default considered a quarter note. "8" would mean an eighth note, and so on. Accordingly, "o=" is the default octave. There are four octaves in the Nokring/RTTTL format. And "b=" is the tempo, in "beats per minute".
 // Part 3: the notes. Each note is separated by a comma and includes, in sequence: a duration specifier, a standard music note, either a, b, c, d, e, f or g, and an octave specifier. If no duration or octave specifier are present, the default applies.
-
+//
 // https://en.wikipedia.org/wiki/Ring_Tone_Text_Transfer_Language
-
+//
 
 static const char RtttlGameOver[] PROGMEM = "Game Over:d=32,o=4,b=320:8d,p,2a,p,8d,p,2a";
 static const char RtttlGameWin[] PROGMEM = "Game Win:d=32,o=4,b=320:8d,4p,8d,p,8d,p,8d,p,2a,p,8d,p,2a";

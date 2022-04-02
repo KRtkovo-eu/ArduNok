@@ -1,3 +1,7 @@
+/*  Do not modify this file unless you are developing
+ *  any features for the firmware.
+ */
+
 // Labels for MENU screen (corresponding bitmap from Bitmaps/Menu.h will be shown)
 static const char* const LANG_MENUITEMS[10] PROGMEM = {
   (const char*) "Serial line",

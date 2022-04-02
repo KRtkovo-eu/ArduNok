@@ -1,3 +1,8 @@
+/*  Do not modify this file unless you are developing
+ *  any features for the firmware.
+ */
+
+// Libraries
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>

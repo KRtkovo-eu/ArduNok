@@ -1,3 +1,7 @@
+/*  Do not modify this file unless you are developing
+ *  any features for the firmware.
+ */
+
 enum ScreenType {
   BlankSleep,
   Desktop,
