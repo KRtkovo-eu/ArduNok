@@ -248,6 +248,13 @@ void loop() {
           DisplayKeyLabel(LANG_KEYTHROW);
           display.display();
           break;
+        case Settings:
+          switch(submenuEntered) {
+            case 0:
+              DisplaySubmenuScreen(menuScreenShown, submenuEntered, LANG_BACKLIGHTALWAYS, (BACKLIGHTALWAYSON ? LANG_SETTINGOFF : LANG_SETTINGON), LANG_KEYSELECT);
+              break;
+          }
+          break;
         default:
           //default = case BlankSleep
           break;
@@ -785,10 +792,19 @@ static void DrawBorder() {
 
 unsigned long startMillisBacklight;
 static void BacklightTurnOnOff(bool turnOn) {
+  BacklightTurnOnOff(turnOn, false);
+}
+static void BacklightTurnOnOff(bool turnOn, bool forceAutomatic) {
   if(turnOn) {
     startMillisBacklight = millis();
   }
-  digitalWrite(PINBACKLIGHT, turnOn ? LOW : HIGH);
+  
+  if(!BACKLIGHTALWAYSON || forceAutomatic) {
+    digitalWrite(PINBACKLIGHT, turnOn ? LOW : HIGH);
+  }
+  else {
+    digitalWrite(PINBACKLIGHT, LOW);
+  }
 }
 
 static void HandleBacklight() {
@@ -874,6 +890,10 @@ static void HandleEnterClick() {
           break;
         case 5:
           currentScreenType = Games;
+          //submenuItemsCount = 1;
+          break;
+        case 8:
+          currentScreenType = Settings;
           //submenuItemsCount = 1;
           break;
         case 9:
@@ -1110,6 +1130,14 @@ static void HandleEnterClick() {
     
       gameDiceValue = TrueRandom.random(1,7);
       break;
+    case Settings:
+      switch(submenuEntered) {
+        case 0:
+          BACKLIGHTALWAYSON = !BACKLIGHTALWAYSON;
+          DisplaySuccessScreen(LANG_SETTINGSDONE);
+          break;
+      }
+      break;
   }
 }
 
@@ -1179,6 +1207,7 @@ static void HandleCancelClick() {
       case PicturesGallery:
       case Games:
       case SerialLineMenu:
+      case Settings:
         currentScreenType = Menu;
         submenuEntered = 0;
         submenuItemsCount = MENUITEMSCOUNT;
@@ -1275,7 +1304,7 @@ static void HandleCancelLongPress() {
       display.setContrast(0);
       display.clearDisplay();
       display.display();
-      BacklightTurnOnOff(false);
+      BacklightTurnOnOff(false, true);
 
       // End serial line communication
       Serial.println(F("Device Sleep OK!"));

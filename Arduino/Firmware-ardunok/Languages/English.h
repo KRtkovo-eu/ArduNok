@@ -67,6 +67,7 @@ static const char* const LANG_MENUITEMS[10] PROGMEM = {
 #define LANG_SETTINGOFF "Off"
 #define LANG_SETTINGSDONE "Done"
 #define LANG_SETTINGSDEFAULT "Standard"
+#define LANG_BACKLIGHTALWAYS "Automatic\nbacklight"
 
 // Other system labels
 #define LANG_INPROGRESS "In\nprogress"

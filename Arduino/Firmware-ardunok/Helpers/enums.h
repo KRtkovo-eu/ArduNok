@@ -19,5 +19,6 @@ enum ScreenType {
   Multimeter,
   PicturesGallery,
   Games,
-  GameDice
+  GameDice,
+  Settings
 };

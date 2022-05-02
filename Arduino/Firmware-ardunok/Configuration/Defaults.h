@@ -26,6 +26,7 @@
 /*  65 is maximum value to have usable display, larger values are too dim (quality of new chinese "Nokia" displays varies so it could be completely different in your case).
  *  You can use original Nokia display which is better in backlight and visible pixels.
  */
+bool BACKLIGHTALWAYSON = false; // define if backlight is always on, overrides BACKLIGHTPERIOD setting
 
 // Default system settings
 bool BEEPONKEYPRESS = true; // for beep on key press set on true
